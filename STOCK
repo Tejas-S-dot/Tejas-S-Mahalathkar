@@ -1,0 +1,64 @@
+import yfinance as yf
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Function to download data for the selected stock and year range
+def get_stock_data(stock_symbol, start_year, end_year):
+    # Download stock data using yfinance
+    start_date = f'{start_year}-01-01'
+    end_date = f'{end_year}-12-31'
+    
+    data = yf.download(stock_symbol, start=start_date, end=end_date)
+    return data
+
+# User input for stock symbol and years
+stock_symbol = input("Enter Stock Symbol (e.g., 'AAPL' for Apple, 'GOOG' for Google, 'ITC.NS' for ITC): ")
+start_year = int(input("Enter the start year: ")) # Taking user input for start year
+end_year = int(input("Enter the end year: "))   # Taking user input for end year
+
+
+# Fetch stock data for the specified stock symbol and year range
+data = get_stock_data(stock_symbol, start_year, end_year)
+
+# Calculate 20-Day Simple Moving Average (SMA)
+data['SMA'] = data['Close'].rolling(window=20).mean()
+
+# Assuming 'X_test' and 'y_pred' are already calculated (for demonstration, use sample data)
+X_test = data.iloc[int(0 * len(data)):]  # Example of using 80% of data for training
+y_pred = X_test['Close'] * 1.07  # Example: Predicted prices as 2% higher than actual (mock prediction)
+
+# Step 8: Visualize the Results
+plt.figure(figsize=(12, 8))
+
+# Set background color to black
+plt.style.use('dark_background')
+
+# Plot Historical Prices (in green)
+plt.plot(data.index, data['Close'], label='Historical Prices', color='green', linewidth=1.5)
+
+# Reset X_test index to get integer indices
+X_test_reset = X_test.reset_index(drop=True)  
+# Use these integer indices to access corresponding datetime values from data.index
+X_test_datetime = data.index[X_test_reset.index]  
+
+# Plot Predicted Prices (in highlight blue)
+plt.plot(X_test_datetime, y_pred, label='Predicted Prices', color='deepskyblue', linestyle='-', linewidth=1.5)
+
+# Add Title and Labels
+plt.title(f'{stock_symbol} Stock Price Prediction and Historical Prices ({start_year}-{end_year})', fontsize=16, color='white')
+plt.xlabel('Date', fontsize=12, color='white')
+plt.ylabel('Price (INR)', fontsize=12, color='white')
+
+# Add grid with white lines to contrast against the dark background
+plt.grid(True, color='white')
+
+# Rotate x-axis labels for better readability and set proper x-axis ticks for years
+plt.xticks(rotation=0)
+plt.xticks(pd.date_range(start=f'{start_year}-01-01', end=f'{end_year}-12-31', freq='3Y'))
+
+# Adding legend with white font
+plt.legend(facecolor='black', edgecolor='white', fontsize=12, loc='upper left', frameon=True)
+
+# Show the plot with tight layout
+plt.tight_layout()
+plt.show()
